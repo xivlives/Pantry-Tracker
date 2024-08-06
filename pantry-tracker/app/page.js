@@ -2,6 +2,7 @@
 import React, {useEffect, useState} from "react";
 import { collection, addDoc, getDoc, querySnapshot, onSnapshot, query, deleteDoc, doc } from "firebase/firestore";
 import { db } from "./firebase";
+import axios from "axios";
 
 
 export default function Home() {
@@ -11,6 +12,7 @@ export default function Home() {
     {name: "cumin", type: "spice"},
   ])
   const [searchQuery, setSearchQuery] = useState('');
+  const [recipes, setRecipes] = useState([]);
   // console.log(item, type)
 
 // Add item to database
@@ -44,6 +46,29 @@ const filteredItems = [...pantryItems.filter(item =>
   item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
   item.type.toLowerCase().includes(searchQuery.toLowerCase())
 )];
+
+// Fetch recipe suggestions from OpenAI API
+const fetchRecipes = async () => {
+  try {
+    const response = await axios.post('https://api.openai.com/v1/completions', {
+      model: 'text-davinci-003',
+      prompt: `Suggest recipes using these ingredients: ${pantryItems.map(item => item.name).join(", ")}`,
+      max_tokens: 150,
+      n: 1,
+      stop: null,
+      temperature: 0.7
+    }, {
+      headers: {
+        'Authorization': `Bearer${process.env.API_KEY} `,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    setRecipes(response.data.choices[0].text.trim().split("\n"));
+  } catch (error) {
+    console.error("Error fetching recipes:", error);
+  }
+};
 
 // delete from database
 const deleteItem = async (id) => {
@@ -88,6 +113,30 @@ const deleteItem = async (id) => {
           
         ))}
       {/* display-pantry-item list ends */}
+
+      {/* fetch-recipe-suggestions button */}
+      <div className="bg-yellow-400 p-4 rounded-lg mt-4">
+          <button
+            onClick={fetchRecipes}
+            className="p-3 border-2 rounded-md bg-sky-700 text-white hover:bg-sky-900 active:bg-gray-400"
+          >
+            Get Recipe Suggestions
+          </button>
+        </div>
+        {/* fetch-recipe-suggestions button ends */}
+
+        {/* display-recipe-suggestions list */}
+        {recipes.length > 0 && (
+          <div className="bg-purple-400 p-4 rounded-lg mt-4 w-full">
+            <h2 className="text-2xl font-bold text-center">Recipe Suggestions</h2>
+            <ul>
+              {recipes.map((recipe, index) => (
+                <li key={index} className="p-2 border-b border-gray-200">{recipe}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {/* display-recipe-suggestions list ends */}
       
       </div>
     </main>
