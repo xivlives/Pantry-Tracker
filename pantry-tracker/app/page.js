@@ -9,7 +9,7 @@ export default function Home() {
   const [newItem, setNewItem] = useState({name: '', type: ''})
 
   const [pantryItems, setPantryItems] = useState([
-    {name: "cumin", type: "spice"},
+
   ])
   const [searchQuery, setSearchQuery] = useState('');
   const [recipes, setRecipes] = useState([]);
