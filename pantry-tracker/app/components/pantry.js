@@ -4,6 +4,7 @@ import { collection, addDoc, getDoc, querySnapshot, onSnapshot, query, deleteDoc
 import { db } from "../firebase";
 import axios from "axios";
 import dotenv from 'dotenv'
+import OpenAI from "openai";
 dotenv.config()
 
 
@@ -11,16 +12,12 @@ dotenv.config()
 
 export default function pantry() {
   const [newItem, setNewItem] = useState({name: '', type: ''})
-
-  const [pantryItems, setPantryItems] = useState([
-
-  ])
+  const [pantryItems, setPantryItems] = useState([  ])
   const [searchQuery, setSearchQuery] = useState('');
   const [recipes, setRecipes] = useState([]);
-  // console.log(item, type)
-  const apiKey = process.env.API_KEY
-  //console.log(apiKey)
-  
+  const prompt = `Suggest recipes using these ingredients: ${pantryItems.map(item => item.name).join(", ")}`;
+  console.log(recipes)
+
 // Add item to database
   const addItem = async (e) => {
     e.preventDefault()
@@ -53,26 +50,23 @@ const filteredItems = [...pantryItems.filter(item =>
   item.type.toLowerCase().includes(searchQuery.toLowerCase())
 )];
 
-// Fetch recipe suggestions from OpenAI API
+// Fetch recipe suggestions from GeminiAI API
 const fetchRecipes = async () => {
   try {
-    const response = await axios.post('https://api.openai.com/v1/completions', {
-      model: 'text-davinci-003',
-      prompt: `Suggest recipes using these ingredients: ${pantryItems.map(item => item.name).join(", ")}`,
-      max_tokens: 150,
-      n: 1,
-      stop: null,
-      temperature: 0.7
-    }, {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey} `,
-        'Content-Type': 'application/json'
-      }
-    });
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify({body: prompt})
+    }).then(data => {
+      setRecipes([data.text()])
+    })
 
-    setRecipes(response.data.choices[0].text.trim().split("\n"));
-  } catch (error) {
-    console.error("Error fetching recipes:", error);
+
+    
+  } catch (error) { 
+
   }
 };
 
@@ -137,7 +131,7 @@ const deleteItem = async (id) => {
             <h2 className="text-2xl font-bold text-center">Recipe Suggestions</h2>
             <ul>
               {recipes.map((recipe, index) => (
-                <li key={index} className="p-2 border-b border-gray-200">{recipe}</li>
+                <div key={index} className="p-2 border-b text-black font-medium text-lg border-gray-200">{recipe}</div>
               ))}
             </ul>
           </div>

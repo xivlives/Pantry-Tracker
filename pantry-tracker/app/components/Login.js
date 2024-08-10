@@ -39,6 +39,7 @@ const Login = () => {
         <TextField
           label="Email"
           type="email"
+          className='bg-white'
           variant="outlined"
           fullWidth
           margin="normal"
@@ -48,6 +49,7 @@ const Login = () => {
         <TextField
           label="Password"
           type="password"
+          className='bg-white'
           variant="outlined"
           fullWidth
           margin="normal"
