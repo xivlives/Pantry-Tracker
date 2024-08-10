@@ -61,12 +61,10 @@ const fetchRecipes = async () => {
       body: JSON.stringify({body: prompt})
     }).then(data => {
       setRecipes([data.text()])
-    })
-
-
-    
+    }) 
   } catch (error) { 
-
+    console.error('Error:', error)
+    setRecipes(["I'm sorry, but I encountered an error. Please try again later."])
   }
 };
 
